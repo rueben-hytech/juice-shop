@@ -5,7 +5,7 @@ pipeline {
     stage('Checkout') {
       steps {
         git branch: 'master',
-            url: 'https://github.com/<your-username>/juice-shop.git',
+            url: 'https://github.com/rueben-hytech/juice-shop.git',
             credentialsId: 'Github-API-Token' // or remove if public
       }
     }
