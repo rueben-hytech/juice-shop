@@ -8,8 +8,6 @@ pipeline {
   tools {
     // optional but recommended for JS/TS analysis context resolution
     nodejs 'NodeJs'                 // <-- define in Global Tool Configuration (optional)
-    // required: the SonarScanner CLI tool
-    sonarQubeScanner 'SonarScanner' // <-- define in Global Tool Configuration
   }
 
   environment {
