@@ -1,31 +1,30 @@
 pipeline {
   agent any
 
-  options { timestamps() }
-
   stages {
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        git branch: 'master',
+            url: 'https://github.com/<your-username>/juice-shop.git',
+            credentialsId: 'Github-API-Token' // or remove if public
+      }
     }
 
-    stage('SonarQube Scan') {
+    stage('SonarQube Scan (Tool)') {
       steps {
-        withSonarQubeEnv('Sonarqube') { // Name you configured under Manage Jenkins → System → SonarQube servers
+        withSonarQubeEnv('Sonarqube') {
           script {
-            def extraProps = [
-              'sonar.projectKey=juice-shop-fork',
-              'sonar.projectName=OWASP Juice Shop (Fork)',
-              "sonar.projectVersion=${env.GIT_COMMIT ?: 'local'}",
-              'sonar.sources=.',
-              'sonar.sourceEncoding=UTF-8',
-              'sonar.scm.provider=git',
-              // keep SAST focused on source, skip builds & tests & assets
-              'sonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.spec.ts,**/*.spec.js,**/test/**,**/e2e/**,**/*.md,frontend/src/assets/i18n/**,data/static/i18n/**,**/*.png,**/*.jpg,**/*.gif,**/*.svg,**/*.ico'
-            ].join(' -D')
-
-            docker.image('sonarsource/sonar-scanner-cli:latest').inside("-v ${pwd()}:/usr/src") {
-              sh """sonar-scanner -D${extraProps}"""
-            }
+            def scannerHome = tool 'SonarScanner'
+            sh """
+              "${scannerHome}/bin/sonar-scanner" \
+                -Dsonar.projectKey=juice-shop-fork \
+                -Dsonar.projectName='OWASP Juice Shop (Fork)' \
+                -Dsonar.projectVersion=${env.GIT_COMMIT ?: 'local'} \
+                -Dsonar.sources=. \
+                -Dsonar.sourceEncoding=UTF-8 \
+                -Dsonar.scm.provider=git \
+                -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.spec.ts,**/*.spec.js,**/test/**,**/e2e/**,**/*.md,frontend/src/assets/i18n/**,data/static/i18n/**
+            """
           }
         }
       }
@@ -33,15 +32,10 @@ pipeline {
 
     stage('Quality Gate') {
       steps {
-        timeout(time: 5, unit: 'MINUTES') {
-          // Works best if you also create a SonarQube → Jenkins webhook: http(s)://<jenkins>/sonarqube-webhook/
+        timeout(time: 30, unit: 'MINUTES') {
           waitForQualityGate abortPipeline: false
         }
       }
     }
-  }
-
-  post {
-    always { echo 'Scan complete. Check results in SonarQube.' }
   }
 }
