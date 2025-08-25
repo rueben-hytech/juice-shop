@@ -1,31 +1,34 @@
 pipeline {
   agent any
 
+  tools {
+    // Optional but recommended for TypeScript rules that need Node.
+    nodejs 'NodeJs'  // Define this under Manage Jenkins » Tools
+  }
+
   stages {
     stage('Checkout') {
       steps {
-        git branch: 'master',
-            url: 'https://github.com/rueben-hytech/juice-shop.git',
-            credentialsId: 'Github-API-Token' // or remove if public
+        checkout scm
       }
     }
 
-    stage('SonarQube Scan (Tool)') {
+    stage('SonarQube Scan') {
       steps {
-        withSonarQubeEnv('Sonarqube') {
-          script {
-            def scannerHome = tool 'SonarScanner'
-            sh """
-              "${scannerHome}/bin/sonar-scanner" \
-                -Dsonar.projectKey=juice-shop-fork \
-                -Dsonar.projectName='OWASP Juice Shop (Fork)' \
-                -Dsonar.projectVersion=${env.GIT_COMMIT ?: 'local'} \
-                -Dsonar.sources=. \
-                -Dsonar.sourceEncoding=UTF-8 \
-                -Dsonar.scm.provider=git \
-                -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.spec.ts,**/*.spec.js,**/test/**,**/e2e/**,**/*.md,frontend/src/assets/i18n/**,data/static/i18n/**
-            """
-          }
+        script {
+          def scannerHome = tool 'SonarScanner'   // Manage Jenkins » Tools name
+        }
+        withSonarQubeEnv('Sonarqube') {           // Manage Jenkins » System name
+          sh """
+            ${scannerHome}/bin/sonar-scanner \
+              -X \
+              -Dsonar.verbose=true \
+              -Dsonar.projectKey=juice-shop-fork \
+              -Dsonar.projectName='OWASP Juice Shop (Fork)' \
+              -Dsonar.sources=. \
+              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.spec.ts,**/*.spec.js,**/test/**,**/e2e/**,**/*.md,frontend/src/assets/i18n/**,data/static/i18n/** \
+              -Dsonar.sourceEncoding=UTF-8
+          """
         }
       }
     }
@@ -33,7 +36,7 @@ pipeline {
     stage('Quality Gate') {
       steps {
         timeout(time: 30, unit: 'MINUTES') {
-          waitForQualityGate abortPipeline: false
+          waitForQualityGate abortPipeline: true
         }
       }
     }
