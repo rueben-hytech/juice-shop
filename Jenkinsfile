@@ -20,7 +20,9 @@ pipeline {
         }
         withSonarQubeEnv('Sonarqube') {           // Manage Jenkins » System name
           sh """
-            ${scannerHome}/bin/sonar-scanner \
+              echo "[DEBUG] scannerHome=${scannerHome}
+              ls -l ${scannerHome}/bin || true
+              ${scannerHome}/bin/sonar-scanner \
               -X \
               -Dsonar.verbose=true \
               -Dsonar.projectKey=rueben-hytech_juice-shop_2f91e1c1-dd03-4da9-8339-01f516660cce \
