@@ -5,6 +5,9 @@ pipeline {
     // Optional but recommended for TypeScript rules that need Node.
     nodejs 'NodeJs'  // Define this under Manage Jenkins » Tools
   }
+  environment {
+    scannerHome = tool 'SonarScanner'   // now available everywhere
+  }
 
   stages {
     stage('Checkout') {
@@ -20,8 +23,6 @@ pipeline {
         }
         withSonarQubeEnv('Sonarqube') {           // Manage Jenkins » System name
           sh """
-              echo "[DEBUG] scannerHome=${scannerHome}
-              ls -l ${scannerHome}/bin || true
               ${scannerHome}/bin/sonar-scanner \
               -X \
               -Dsonar.verbose=true \
