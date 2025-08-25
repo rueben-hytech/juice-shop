@@ -23,7 +23,7 @@ pipeline {
             ${scannerHome}/bin/sonar-scanner \
               -X \
               -Dsonar.verbose=true \
-              -Dsonar.projectKey=juice-shop-fork \
+              -Dsonar.projectKey=rueben-hytech_juice-shop_2f91e1c1-dd03-4da9-8339-01f516660cce \
               -Dsonar.projectName='OWASP Juice Shop (Fork)' \
               -Dsonar.sources=. \
               -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/*.spec.ts,**/*.spec.js,**/test/**,**/e2e/**,**/*.md,frontend/src/assets/i18n/**,data/static/i18n/** \
